@@ -22,7 +22,9 @@ const MyCourses = () => {
   };
 
   useEffect(() => {
-    if (isEducator) fetchEducatorCourses();
+    if (isEducator) {
+      fetchEducatorCourses();
+    }
   }, [isEducator]);
 
   return courses ? (

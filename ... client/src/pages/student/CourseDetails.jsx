@@ -30,7 +30,7 @@ const CourseDetails = () => {
 
   const fetchCourseData = async () => {
     try {
-      const { data } = await axios.get(backendUrl + "api/course/" + id);
+      const { data } = await axios.get(backendUrl + "/api/course/" + id);
 
       if (data.success) {
         setCourseData(data.courseData);
@@ -51,6 +51,7 @@ const CourseDetails = () => {
         return toast.warn("Already Enrolled");
       }
 
+      const token = getToken();
       const { data } = await axios.post(
         backendUrl + "api/user/purchase",
         { courseId: courseData._id },
@@ -70,7 +71,7 @@ const CourseDetails = () => {
 
   useEffect(() => {
     fetchCourseData();
-  }, []);
+  }, [allCourses]);
 
   useEffect(() => {
     if (userData && courseData) {

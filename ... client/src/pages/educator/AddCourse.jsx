@@ -105,7 +105,8 @@ const AddCourse = () => {
       const courseData = {
         courseTitle,
         courseDescription: quillRef.current.root.innerHTML,
-        coursePrice: Number(discount),
+        coursePrice: Number(coursePrice),
+        discount: Number(discount),
         courseContent: chapters,
       };
       const formData = new FormData();

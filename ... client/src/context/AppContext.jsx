@@ -22,7 +22,7 @@ export const AppContextProvider = (props) => {
   // Fetch All Courses
   const fetchAllCourses = async () => {
     try {
-      await axios.get(backendUrl + "/api/course/all");
+      const { data } = await axios.get(backendUrl + "/api/course/all");
 
       if (data.success) {
         setAllCourses(data.courses);
@@ -53,7 +53,7 @@ export const AppContextProvider = (props) => {
         toast.error(data.message);
       }
     } catch (error) {
-      toast.error(data.message);
+      toast.error(error.message);
     }
   };
 
@@ -103,7 +103,7 @@ export const AppContextProvider = (props) => {
     try {
       const token = await getToken();
       const { data } = await axios.get(
-        backendUrl + "api/user/enrolled-courses",
+        backendUrl + "/api/user/enrolled-courses",
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -124,7 +124,7 @@ export const AppContextProvider = (props) => {
   useEffect(() => {
     if (user) {
       fetchUserData();
-      fetchUserEnrolledCoures;
+      fetchUserEnrolledCoures();
     }
   }, [user]);
 

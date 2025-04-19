@@ -1,11 +1,10 @@
 import React, { useContext, useEffect, useState } from "react";
-import { dummyStudentEnrolled } from "../../assets/assets";
 import Loading from "../../components/student/Loading";
 import { AppContext } from "../../context/AppContext";
 import axios from "axios";
 
 const StudentEnrolled = () => {
-  const { backendUrl, grtToken, isEducator } = useContext(AppContext);
+  const { backendUrl, getToken, isEducator } = useContext(AppContext);
   const [enrolledStudents, setEnrolledStudents] = useState(null);
 
   const fetchEnrolledStudents = async () => {
@@ -21,7 +20,7 @@ const StudentEnrolled = () => {
         toast.error(data.message);
       }
     } catch (error) {
-      toast.error(data.message);
+      toast.error(error.message);
     }
   };
 

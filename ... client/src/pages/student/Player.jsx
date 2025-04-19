@@ -99,7 +99,7 @@ const Player = () => {
       );
 
       if (data.success) {
-        toast.seccess(data.message);
+        toast.success(data.message);
         fetchUserEnrolledCourses();
       } else {
         toast.error(data.message);
