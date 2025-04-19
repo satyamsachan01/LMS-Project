@@ -1,6 +1,8 @@
 import { Webhook } from "svix";
 import User from "../models/User.js";
-import { request, response } from "express";
+import Stripe from "stripe";
+import { Purchase } from "../models/Purchase.js";
+import Course from "../models/Course.js";
 
 // API Controller Function to Manage Clerk User with database
 
@@ -11,7 +13,7 @@ export const clerkWebhooks = async (req,res)=>{
     await whook.verify(JSON.stringify(req.body),{
         "svix-id": req.headers["svix-id"],
         "svix-timestamp":req.headers["svix-timestamp"],
-        "svix-signature":req.headers["svix-signature"],
+        "svix-signature":req.headers["svix-signature"]
     })
 
 const {data,type} = req.body
@@ -63,19 +65,18 @@ export const stripeWebhooks = async (request,response)=>{
 
     let event;
     try{
-        event = stripeInstance.Webhooks.constructEvent(request.body,sig,process.env.STRIPE_WEBHOOK_SECRET);
+        event = Stripe.webhooks.constructEvent(request.body,sig,process.env.STRIPE_WEBHOOK_SECRET);
     }
     catch(error){
        response.status(400).send(`Webhook Error : ${err.message}`)
     }
-}
 
+    // Handle the event
 
-
-// Handle the event
-switch (event.type) {
+switch (Window.event.type) {
     case "payment_intent.succeeded":
-      {const paymentIntent = event.data.object;
+      {
+      const paymentIntent = Window.event.data.object;
       const paymentIntentId = paymentIntent.id;
 
       const session = await stripeInstance.checkout.sessions.list({
@@ -84,7 +85,7 @@ switch (event.type) {
 
       const {purchaseId}= session.data[0].metadata;
      
-    const purchaseData = await purchaseId.findById(purchaseId)  
+    const purchaseData = await Purchase.findById(purchaseId)  
     const userData = await User.findById(purchaseData.userId)
     const courseData = await Course.findById(purchaseData.userId.toString())
 
@@ -95,17 +96,32 @@ switch (event.type) {
     await userData.save()
 
     purchaseData.status = "completed"
-
-
-      break};
-    case "payment_method.attached":
-      const paymentMethod = event.data.object;
-      console.log("PaymentMethod was attached to a Customer!");
+    await purchaseData.save()
       break;
+    }
+    case "payment_intent.payment_failed":{
+        const paymentIntent = Window.event.data.object;
+        const paymentIntentId = paymentIntent.id;
+       
+        const session = await stripeInstance.checkout.sessions.list({
+            payment_intent: paymentIntentId
+        })
+      
+        const {purchaseId} = session.data[0].metadata;
+        const purchaseData = await Purchase.findById(purchaseId)
+        purchaseData.status = "failed"
+        await purchaseData.save()
+      break;
+    }
     // ... handle other event types
     default:
-      console.log(`Unhandled event type ${event.type}`);
+      console.log(`Unhandled event type ${Window.event.type}`);
   }
 
   // Return a responsento acknowledge receipt of the event
   response.json({received: true});
+
+}
+
+
+
